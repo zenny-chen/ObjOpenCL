@@ -1,7 +1,7 @@
 # ObjOpenCL
 Using OpenCL with Objective-C API
 
-This project can be built directly on Linux with GCC. Of course, it workds better with Clang, especially Apple LLVM.
+This project can be built directly on Linux with GCC. Of course, it works better with Clang, especially Apple LLVM.
 ATTENTION: if you use Clang, please use version 3.8 or above. And if you use Xcode, please use Xcode 8.0 or above.
 
 GNUmakefile lists the compiler options, including paths and library paths. Modify the paths according to your OS environment.
