@@ -22,7 +22,7 @@
 
 #endif
 
-
+/** Used for work item dimension and work group dimension */
 struct OCLDimensionType
 {
     size_t x, y, z, w;
@@ -162,23 +162,15 @@ extern NSString* _Nonnull const OCL_CONTEXT_PROPERTY_KEY_INTEROP_USER_SYNC;
 @property (nonatomic, readonly) NSString* _Nonnull profile;
 @property (nonatomic, readonly) int clStatus;
 
-- (NSArray OBJ_OPENCL_WITHTYPE(NSString*) * _Nullable)queryExtensions;
+- (NSArray OBJ_OPENCL_WITHTYPE(NSString*) * _Nullable)newQueryExtensions;
 
-- (NSArray OBJ_OPENCL_WITHTYPE(id<OCLDevice>) * _Nonnull)getDevices;
-
-@end
-
-
-@protocol OCLPlatformsInfoList <NSObject>
-
-@property (nonatomic, readonly) int clStatus;
-@property (nonatomic, readonly) NSArray OBJ_OPENCL_WITHTYPE(id<OCLPlatformInfo>) * _Nonnull platforms;
+- (NSArray OBJ_OPENCL_WITHTYPE(id<OCLDevice>) * _Nonnull)newDevices;
 
 @end
 
-extern id<OCLPlatformsInfoList> _Nullable OCLCreateCurrentPlatformsInfo(void);
+
+extern NSArray OBJ_OPENCL_WITHTYPE(id<OCLPlatformInfo>) * _Nullable OCLCreateCurrentPlatformInfos(cl_int* _Nullable pStatus);
 
 
 #endif /* obj_opencl_h */
-
 
