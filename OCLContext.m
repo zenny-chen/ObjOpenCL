@@ -139,11 +139,12 @@
         
         if(need)
         {
-            NSMutableArray *sourceArray = [NSMutableArray arrayWithCapacity:count];
+            NSMutableArray *sourceArray = [[NSMutableArray alloc] initWithCapacity:count];
             for(int i = 0; i < count; i++)
                 [sourceArray addObject:[NSString stringWithUTF8String:sources[i]]];
             
             [oclProgram setSources:sourceArray];
+            [sourceArray release];
             
             size_t binaryLength = 0;
             clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, sizeof(binaryLength), &binaryLength, NULL);
@@ -167,7 +168,7 @@
         
         size_t startIndex = 0;
         size_t endIndex;
-        NSMutableArray *kernelArray = [NSMutableArray arrayWithCapacity:kernelCount];
+        NSMutableArray *kernelArray = [[NSMutableArray alloc] initWithCapacity:kernelCount];
         for(endIndex = 0; endIndex < kernelNameLength; endIndex++)
         {
             char ch = kernelNamesBuf[endIndex];
@@ -187,6 +188,7 @@
         }
         
         [oclProgram setKernels:kernelArray];
+        [kernelArray release];
         
         free(kernelNamesBuf);
     }
@@ -241,4 +243,3 @@
 }
 
 @end
-
