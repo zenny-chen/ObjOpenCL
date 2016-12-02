@@ -20,7 +20,8 @@ static void CL_CALLBACK MyEventHandler(cl_event event, cl_int status, void *data
 int main(int argc, const char * argv[])
 {
     obj pool = [NSAutoreleasePool new];
-
+    
+    NSArray *devices = nil;
     id<OCLContext> context = nil;
     id<OCLProgram> program = nil;
     id<OCLCommandQueue> commandQueue = nil;
@@ -29,27 +30,31 @@ int main(int argc, const char * argv[])
     id<OCLMemoryBuffer> memDst = nil;
     id<OCLEvent> event = nil;
     id<OCLKernel> kernel = nil;
-
+    
     int *pHostBuffer = NULL;
     float *pDeviceBuffer = NULL;
-
-    obj platformInfoList = OCLCreateCurrentPlatformsInfo();
-    if(platformInfoList.platforms.count == 0)
+    
+    obj platformInfoList = OCLCreateCurrentPlatformInfos(NULL);
+    if(platformInfoList.count == 0)
     {
         NSLog(@"Your current environment does not support OpenCL!");
         goto CLEAR_RESOURCES;
     }
     
-    obj platform = [platformInfoList.platforms objectAtIndex:0];
+    obj platform = [platformInfoList objectAtIndex:0];
     
-    obj devices = [platform getDevices];
+    NSArray *extensions = [platform newQueryExtensions];
+    NSLog(@"Platform extensions: %@", extensions);
+    [extensions release];
+    
+    devices = [platform newDevices];
     
     if(devices.count == 0)
     {
         NSLog(@"No OpenCL devices!");
         goto CLEAR_RESOURCES;
     }
-
+    
     id<OCLDevice> currDevice = [devices objectAtIndex:0];
     
     for(id<OCLDevice> device in devices)
@@ -78,7 +83,7 @@ int main(int argc, const char * argv[])
         NSLog(@"Failed to build the program!");
         goto CLEAR_RESOURCES;
     }
-
+    
     commandQueue = [context newCommandQueue:nil];
     if(commandQueue == nil)
     {
@@ -93,7 +98,7 @@ int main(int argc, const char * argv[])
         NSLog(@"Failed to create memSrc1 buffer! Error code: %d", context.clStatus);
         goto CLEAR_RESOURCES;
     }
-
+    
     memSrc2 = [context newMemoryBuffer:CL_MEM_READ_WRITE size:contentLength hostPtr:NULL];
     if(memSrc2 == nil)
     {
@@ -143,7 +148,7 @@ int main(int argc, const char * argv[])
     
     // 做数据校验
     printf("s0 = %f, s1 = %f, s3 = %f, s4 = %f\n", pDeviceBuffer[0], pDeviceBuffer[1], pDeviceBuffer[2], pDeviceBuffer[3]);
-
+    
 CLEAR_RESOURCES:
     
     free(pHostBuffer);
@@ -157,11 +162,11 @@ CLEAR_RESOURCES:
     [program release];
     [commandQueue release];
     [context release];
+    [devices release];
     [platformInfoList release];
-
+    
     [pool drain];
     
     return 0;
 }
-
 
