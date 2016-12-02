@@ -13,11 +13,15 @@
 
 @synthesize clStatus, sources, binary, kernels;
 
-- (instancetype)initWithProgram:(cl_program)program
+- (instancetype)initWithProgram:(cl_program)program sources:(NSArray*)sourceArray binary:(NSData*)binaryData kernels:(NSArray*)kernelArray
 {
     self = [super init];
     
     mProgram = program;
+    sources = [sourceArray retain];
+    binary = [binaryData retain];
+    kernels = [kernelArray retain];
+    
     clStatus = CL_SUCCESS;
     
     return self;
@@ -25,9 +29,9 @@
 
 - (void)dealloc
 {
-    [self setSources:nil];
-    [self setBinary:nil];
-    [self setKernels:nil];
+    [sources release];
+    [binary release];
+    [kernels release];
     
     clReleaseProgram(mProgram);
     
