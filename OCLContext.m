@@ -135,24 +135,25 @@
     
     if(program != NULL)
     {
-        oclProgram = [[ZCOCLProgram alloc] initWithProgram:program];
+        NSMutableArray *sourceArray = nil;
+        NSData *binaryData = nil;
         
         if(need)
         {
-            NSMutableArray *sourceArray = [[NSMutableArray alloc] initWithCapacity:count];
+            sourceArray = [[NSMutableArray alloc] initWithCapacity:count];
             for(int i = 0; i < count; i++)
-                [sourceArray addObject:[NSString stringWithUTF8String:sources[i]]];
-            
-            [oclProgram setSources:sourceArray];
-            [sourceArray release];
+            {
+                NSString *str = [[NSString alloc] initWithUTF8String:sources[i]];
+                [sourceArray addObject:str];
+                [str release];
+            }
             
             size_t binaryLength = 0;
             clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, sizeof(binaryLength), &binaryLength, NULL);
             uint8_t *binaryBuf = malloc(binaryLength);
             clGetProgramInfo(program, CL_PROGRAM_BINARIES, sizeof(binaryBuf), &binaryBuf, NULL);
             
-            NSData *binaryData = [NSData dataWithBytes:binaryBuf length:binaryLength];
-            [oclProgram setBinary:binaryData];
+            binaryData = [[NSData alloc] initWithBytes:binaryBuf length:binaryLength];
             
             free(binaryBuf);
         }
@@ -175,19 +176,24 @@
             if(ch == ';')
             {
                 kernelNamesBuf[endIndex] = '\0';
-                NSString *str = [NSString stringWithUTF8String:&kernelNamesBuf[startIndex]];
+                NSString *str = [[NSString alloc] initWithUTF8String:&kernelNamesBuf[startIndex]];
                 [kernelArray addObject:str];
+                [str release];
                 
                 startIndex = endIndex + 1;
             }
         }
         if(startIndex != endIndex)
         {
-            NSString *str = [NSString stringWithUTF8String:&kernelNamesBuf[startIndex]];
+            NSString *str = [[NSString alloc] initWithUTF8String:&kernelNamesBuf[startIndex]];
             [kernelArray addObject:str];
+            [str release];
         }
         
-        [oclProgram setKernels:kernelArray];
+        oclProgram = [[ZCOCLProgram alloc] initWithProgram:program sources:sourceArray binary:binaryData kernels:kernelArray];
+        
+        [sourceArray release];
+        [binaryData release];
         [kernelArray release];
         
         free(kernelNamesBuf);
@@ -243,3 +249,4 @@
 }
 
 @end
+
