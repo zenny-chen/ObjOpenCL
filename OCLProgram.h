@@ -22,11 +22,7 @@
     NSArray *kernels;
 }
 
-@property (nonatomic, retain) NSArray *sources;
-@property (nonatomic, retain) NSData* binary;
-@property (nonatomic, retain) NSArray *kernels;
-
-- (instancetype)initWithProgram:(cl_program)program;
+- (instancetype)initWithProgram:(cl_program)program sources:(NSArray*)sourceArray binary:(NSData*)binaryData kernels:(NSArray*)kernelArray;
 
 @end
 
