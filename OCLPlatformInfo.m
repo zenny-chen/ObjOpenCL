@@ -14,6 +14,46 @@
 
 @synthesize name, version, vendor, profile, clStatus;
 
+NSArray* OCLCreateCurrentPlatformInfos(cl_int *pStatus)
+{
+    NSMutableArray *platforms = [[NSMutableArray alloc] initWithCapacity:16];
+    cl_int status = CL_SUCCESS;
+    
+    do
+    {
+        cl_uint nPlatforms = 0;
+        status = clGetPlatformIDs(0, NULL, &nPlatforms);
+        if(status != CL_SUCCESS)
+            break;
+        
+        cl_platform_id platformList[nPlatforms];
+        status = clGetPlatformIDs(nPlatforms, platformList, NULL);
+        
+        if(status != CL_SUCCESS)
+            break;
+        
+        // Fetch platform names
+        for(cl_uint i = 0; i < nPlatforms; i++)
+        {
+            ZCOCLPlatformInfo *platformInfo = [[ZCOCLPlatformInfo alloc] initWithPlatformID:platformList[i]];
+            [platforms addObject:platformInfo];
+            [platformInfo release];
+        }
+    }
+    while(NO);
+    
+    if(status != CL_SUCCESS)
+    {
+        [platforms release];
+        platforms = nil;
+    }
+    
+    if(pStatus != NULL)
+        *pStatus = status;
+    
+    return platforms;
+}
+
 - (instancetype)initWithPlatformID:(cl_platform_id)platform
 {
     self = [super init];
@@ -24,16 +64,20 @@
     char strBuf[256];
     
     clGetPlatformInfo(platform, CL_PLATFORM_NAME, 256, strBuf, NULL);
-    name = [[NSString stringWithUTF8String:strBuf] retain];
+    NSString *str = [[NSString alloc] initWithUTF8String:strBuf];
+    name = str;
     
     clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 256, strBuf, NULL);
-    version = [[NSString stringWithUTF8String:strBuf] retain];
+    str = [[NSString alloc] initWithUTF8String:strBuf];
+    version = str;
     
     clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 256, strBuf, NULL);
-    vendor = [[NSString stringWithUTF8String:strBuf] retain];
+    str = [[NSString alloc] initWithUTF8String:strBuf];
+    vendor = str;
     
     clGetPlatformInfo(platform, CL_PLATFORM_PROFILE, 256, strBuf, NULL);
-    profile = [[NSString stringWithUTF8String:strBuf] retain];
+    str = [[NSString alloc] initWithUTF8String:strBuf];
+    profile = str;
     
     return self;
 }
@@ -48,10 +92,8 @@
     [super dealloc];
 }
 
-- (NSArray*)queryExtensions
+- (NSArray*)newQueryExtensions
 {
-    NSMutableArray *extensions = [NSMutableArray arrayWithCapacity:128];
-    
     size_t extStrLen = 0;
     cl_int status = clGetPlatformInfo(mPlatform, CL_PLATFORM_EXTENSIONS, 0, NULL, &extStrLen);
     if(status != CL_SUCCESS)
@@ -70,6 +112,8 @@
         return nil;
     }
     
+    NSMutableArray *extensions = [[NSMutableArray alloc] initWithCapacity:128];
+    
     char tmpBuf[256];
     
     size_t index = 0;
@@ -81,7 +125,11 @@
         else
         {
             tmpBuf[tmpIndex] = '\0';
-            [extensions addObject:[NSString stringWithUTF8String:tmpBuf]];
+            
+            NSString *str = [[NSString alloc] initWithUTF8String:tmpBuf];
+            [extensions addObject:str];
+            [str release];
+            
             tmpIndex = 0;
         }
         
@@ -90,7 +138,10 @@
     if(tmpIndex > 0)
     {
         tmpBuf[tmpIndex] = '\0';
-        [extensions addObject:[NSString stringWithUTF8String:tmpBuf]];
+        
+        NSString *str = [[NSString alloc] initWithUTF8String:tmpBuf];
+        [extensions addObject:str];
+        [str release];
     }
     
     free(extStrBuf);
@@ -98,9 +149,9 @@
     return extensions;
 }
 
-- (NSArray*)getDevices
+- (NSArray*)newDevices
 {
-    NSMutableArray *devices = [NSMutableArray arrayWithCapacity:128];
+    NSMutableArray *devices = [[NSMutableArray alloc] initWithCapacity:128];
     
     do
     {
@@ -140,73 +191,4 @@
 }
 
 @end
-
-
-@implementation ZCOCLPlatformsInfoList
-
-@synthesize platforms, clStatus;
-
-- (instancetype)init
-{
-    self = [super init];
-    
-    platforms = [[NSMutableArray alloc] initWithCapacity:16];
-    clStatus = CL_SUCCESS;
-    
-    do
-    {
-        cl_uint nPlatforms = 0;
-        cl_int status = clGetPlatformIDs(0, NULL, &nPlatforms);
-        if(status != CL_SUCCESS)
-        {
-            clStatus = status;
-            break;
-        }
-        
-        cl_platform_id platformList[nPlatforms];
-        status = clGetPlatformIDs(nPlatforms, platformList, NULL);
-
-        if(status != CL_SUCCESS)
-        {
-            clStatus = status;
-            break;
-        }
-        
-        // Fetch platform names
-        for(cl_uint i = 0; i < nPlatforms; i++)
-        {
-            ZCOCLPlatformInfo *platformInfo = [[ZCOCLPlatformInfo alloc] initWithPlatformID:platformList[i]];
-            [platforms addObject:platformInfo];
-            [platformInfo release];
-        }
-    }
-    while(NO);
-    
-    return self;
-}
-
-- (void)dealloc
-{
-    [platforms removeAllObjects];
-    [platforms release];
-    
-    [super dealloc];
-}
-
-id<OCLPlatformsInfoList> OCLCreateCurrentPlatformsInfo(void)
-{
-    ZCOCLPlatformsInfoList *platformList = [ZCOCLPlatformsInfoList new];
-    
-    if(platformList.platforms.count == 0)
-    {
-        [platformList release];
-        platformList = nil;
-    }
-    
-    return platformList;
-}
-
-@end
-
-
 
