@@ -30,15 +30,3 @@
 
 @end
 
-
-@interface ZCOCLPlatformsInfoList : NSObject<OCLPlatformsInfoList>
-{
-@private
-    
-    NSMutableArray *platforms;
-    
-    cl_int clStatus;
-}
-
-@end
-
